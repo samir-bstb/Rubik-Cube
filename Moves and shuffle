@@ -1,3 +1,5 @@
+import random
+
 class Cube:
     def __init__(self):
         self.front_mtx = [
@@ -206,12 +208,19 @@ class Cube:
                 print(f"Invalid move: {move}")
 
     def auto_shuffle(self):
-        pass
-
+        moves_list = [self.move_F, self.move_R, self.move_U, self.move_B, self.move_L, self.move_D,
+                      self.move_G, self.move_S, self.move_W, self.move_V, self.move_I, self.move_O]
+        limit = random.randint(2, 15)
+        calls = 0
+        while calls < limit:
+            move = random.choice(moves_list)
+            move()
+            calls += 1
 
 c = Cube()
-arr = ['F', 'R', 'U', 'B', 'L', 'D', 'O', 'I', 'V', 'W', 'S', 'G']  
-c.shuffle(arr)
+#arr = ['F', 'R', 'U', 'B', 'L', 'D', 'O', 'I', 'V', 'W', 'S', 'G']  
+#c.shuffle(arr)
+c.auto_shuffle()
 c.print_cube()
 print()
 
