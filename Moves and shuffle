@@ -77,7 +77,7 @@ class Cube:
             self.right_mtx[2][i] = self.front_mtx[2][i]
             self.front_mtx[2][i] = self.left_mtx[2][i]
             self.left_mtx[2][i] = back_mtx_copy[0][2-i]
-            self.back_mtx[0][i] = right_mtx_copy[2][i]
+            self.back_mtx[0][i] = right_mtx_copy[2][2-i]
 
     def move_U(self):
         left_mtx_copy = [row[:] for row in self.left_mtx]
@@ -214,14 +214,14 @@ class Cube:
         calls = 0
         while calls < limit:
             move = random.choice(moves_list)
+            print("move : ", move)
             move()
             calls += 1
 
 c = Cube()
 #arr = ['F', 'R', 'U', 'B', 'L', 'D', 'O', 'I', 'V', 'W', 'S', 'G']  
+#arr = ['F', 'B', 'S', 'R']  
 #c.shuffle(arr)
 c.auto_shuffle()
 c.print_cube()
 print()
-
-
