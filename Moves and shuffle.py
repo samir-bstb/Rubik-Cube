@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import math
 from queue import Queue
 
 class Cube:
@@ -239,13 +240,26 @@ class Cube:
 
         return int_arr
 
+    def decode(self, arr):
+        cubo = []
+        for element in arr:
+            decoded_mtx = [[0] * 3 for _ in range(3)]
+            mask = 2**6 - 1
+            for i in range(3):
+              for j in range(3):  
+                color = int(math.log2(element & mask))
+                decoded_mtx[i][j] = color
+                element >>= 6
+            cubo.append(decoded_mtx)
+        return cubo
+
 class Sover():
     def __init__(self):
        self.solved_cube = [571885666967682, 285942833483841, 1143771333935364, 2287542667870728, 4575085335741456, 9150170671482912]
 
     def bfs(self):
         Q = Queue()
-        Q.put()
+        Q.put(self.Cube)
         visited = set()
         self.encode()
         while not Queue.empty():
@@ -253,10 +267,11 @@ class Sover():
 
 
 c = Cube()
-#arr = ['F', 'R', 'D']  
-#c.shuffle(arr)
+arr = ['F', 'R', 'D']  
+c.shuffle(arr)
 #c.auto_shuffle()
 c.print_cube()
 print()
 result = c.encode()
 print(result) 
+c.decode(result)
