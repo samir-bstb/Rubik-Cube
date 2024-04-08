@@ -1,6 +1,7 @@
 import numpy as np
 import random
 import math
+import copy
 from queue import Queue
 
 class Cube:
@@ -119,6 +120,7 @@ class Cube:
             self.low_mtx[i][2] = self.back_mtx[i][2]
             self.back_mtx[i][2] = self.up_mtx[i][2]
             self.up_mtx[i][2] = front_mtx_copy[i][2]
+        self.adjust()
 
     def move_L(self):
         back_mtx_copy = [row[:] for row in self.back_mtx]
@@ -141,7 +143,6 @@ class Cube:
             self.low_mtx[2][i] = self.left_mtx[i][0]
             self.left_mtx[i][0] = up_mtx_copy[0][2 - i]
         self.adjust()
-
     def move_G(self):  # F'
         front_mtx_copy = [row[:] for row in self.front_mtx]
         self.left_mtx = self.rotate_counterclockwise(self.left_mtx)
@@ -210,34 +211,34 @@ class Cube:
     def shuffle(self, arr):
         for move in arr:
             self.identify_move(move)
-
+    
     def identify_move(self, move):
-        if move == 'F':
-            self.move_F()
-        elif move == 'R':
-            self.move_R()
-        elif move == 'U':
-            self.move_U()
-        elif move == 'B':
-            self.move_B()
-        elif move == 'L':
-            self.move_L()
-        elif move == 'D':
-            self.move_D()
-        elif move == 'G':  # F'
-            self.move_G()
-        elif move == 'S':  # R'
-            self.move_S()
-        elif move == 'W':  # U'
-            self.move_W()
-        elif move == 'V':  # B'
-            self.move_V()
-        elif move == 'I':  # L'
-            self.move_I()
-        elif move == 'O':  # D'
-            self.move_O()
-        else:
-            print(f"Invalid move: {move}")
+      if move == 'F':
+          self.move_F()
+      elif move == 'R':
+          self.move_R()
+      elif move == 'U':
+          self.move_U()
+      elif move == 'B':
+          self.move_B()
+      elif move == 'L':
+          self.move_L()
+      elif move == 'D':
+          self.move_D()
+      elif move == 'G':  # F'
+          self.move_G()
+      elif move == 'S':  # R'
+          self.move_S()
+      elif move == 'W':  # U'
+          self.move_W()
+      elif move == 'V':  # B'
+          self.move_V()
+      elif move == 'I':  # L'
+          self.move_I()
+      elif move == 'O':  # D'
+          self.move_O()
+      else:
+          print(f"Invalid move: {move}")
 
     # changes the style of the cube randomly
     def auto_shuffle(self, limit):
@@ -284,19 +285,28 @@ class Cube:
         return cubo
 
 class Solver:
-    def __init__(self):
+    def __init__(self, cube_array):
         self.cube = Cube()
+        self.cube.cube_array = cube_array
+        self.cube.up_mtx =  self.cube.cube_array[0]
+        self.cube.front_mtx = self.cube.cube_array[1] 
+        self.cube.low_mtx = self.cube.cube_array[2]
+        self.cube.left_mtx = self.cube.cube_array[3]
+        self.cube.right_mtx = self.cube.cube_array[4]
+        self.cube.back_mtx = self.cube.cube_array[5]
         self.solved_cube = [
-            [
-                [0, 0, 0],  # white
-                [0, 0, 0],
-                [0, 0, 0]
-            ],
             [
                 [1, 1, 1],  # Orange
                 [1, 1, 1],
                 [1, 1, 1]
             ],
+
+            [
+                [0, 0, 0],  # white
+                [0, 0, 0],
+                [0, 0, 0]
+            ],
+
             [
                 [2, 2, 2],  # Red
                 [2, 2, 2],
@@ -318,21 +328,53 @@ class Solver:
                 [5, 5, 5]
             ]
         ]
-        #self.solved_cube2 = [571885666967682, 285942833483841, 1143771333935364, 2287542667870728, 4575085335741456, 9150170671482912]
+        
         self.moves = ['F', 'R', 'U', 'B', 'L', 'D', 'G', 'S', 'W', 'V', 'I', 'O']
+        self.Q = Queue()
+        self.visited = []
 
     def bfs(self):
-        Q = Queue()
-        Q.put(self.cube.cube_array)
-        visited = set()
+        solution = self.__bfs(self.cube.cube_array)
+        if solution is None:
+          print("No solution found")
+        else:
+          print(solution)
+          
+    def __bfs(self, start):
+      print("Entro")
+      self.visited = []
+      self.Q.put(start)
+      self.visited.append(start)
 
-        while not Q.empty():
-            current_state = Q.get()
+      print("bfs start", start)
+      while not self.Q.empty():
+          curr_state = self.Q.get()
+          if curr_state == self.solved_cube:
+              print("Solved")
+              return curr_state
 
+          for move in self.moves:
+              next_state = copy.deepcopy(curr_state)
+              next_state = self.apply_move(move, next_state)
+              if next_state not in self.visited:
+                self.Q.put(next_state)
+                self.visited.append(next_state)
+
+    def apply_move(self, move, curr_state):
+      self.cube.cube_array = curr_state
+      self.cube.up_mtx = curr_state[0]
+      self.cube.front_mtx = curr_state[1]
+      self.cube.low_mtx = curr_state[2]
+      self.cube.left_mtx = curr_state[3]
+      self.cube.right_mtx = curr_state[4]
+      self.cube.back_mtx = curr_state[5]
+      self.cube.identify_move(move)
+      return self.cube.cube_array
+        
 c = Cube()
-#arr = ['D']
-#c.shuffle(arr)
-c.auto_shuffle(6)
+arr = ['D']
+c.shuffle(arr)
+#c.auto_shuffle(6)
 c.print_cube()
 print()
 c.print_arr()
@@ -342,6 +384,5 @@ print(result)
 s = c.decode(result)
 print(s)
 
-#s = Solver()
-#r = s.bfs()
-#print(r)
+s = Solver(c.cube_array)
+s.bfs()
