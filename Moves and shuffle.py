@@ -341,7 +341,6 @@ class Solver:
           print(solution)
           
     def __bfs(self, start):
-      print("Entro")
       self.visited = []
       self.Q.put(start)
       self.visited.append(start)
