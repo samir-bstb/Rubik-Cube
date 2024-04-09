@@ -369,6 +369,71 @@ class Solver:
       self.cube.back_mtx = curr_state[5]
       self.cube.identify_move(move)
       return self.cube.cube_array
+
+    def apply_move2(self, move, curr_state):
+        self.cube.cube_array = copy.deepcopy(curr_state)
+        self.cube.up_mtx = self.cube.cube_array[0]
+        self.cube.front_mtx = self.cube.cube_array[1]
+        self.cube.low_mtx = self.cube.cube_array[2]
+        self.cube.left_mtx = self.cube.cube_array[3]
+        self.cube.right_mtx = self.cube.cube_array[4]
+        self.cube.back_mtx = self.cube.cube_array[5]
+        self.cube.identify_move(move)
+        return self.cube.cube_array
+
+    def a_star(self, heuristic):
+        self.visited = set()
+
+        pq = PriorityQueue()
+        source = NodeAStar(self.cube.cube_array)
+        target = NodeAStar(self.solved_cube)
+        source.heuristic_value = heuristic(source, target)
+        source.distance = 0
+        pq.put(source)
+
+        while not pq.empty():
+            current_node = pq.get()
+            if current_node.curr_state == target.curr_state:
+                return current_node.distance, current_node.path
+
+            curr_state_str = str(current_node.curr_state)
+            if curr_state_str not in self.visited:
+                self.visited.add(curr_state_str)
+                for move in self.moves:
+                    new_state = self.apply_move2(move, current_node.curr_state)
+                    new_node = NodeAStar(new_state)
+                    new_node.distance = current_node.distance + 1
+                    new_node.heuristic_value = heuristic(new_node, target)
+                    new_node.path = current_node.path + [move]
+                    pq.put(new_node)
+        return None
+
+
+class NodeAStar:
+    def __init__(self, curr_state):
+        self.curr_state = curr_state
+        self.distance = 0
+        self.heuristic_value = 0
+        self.path = []
+
+    def __lt__(self, other):
+        return self.distance + self.heuristic_value < other.distance + other.heuristic_value
+
+    def __eq__(self, other):
+        return self.curr_state == other.curr_state
+
+    def __gt__(self, other):
+        return self.distance + self.heuristic_value > other.distance + other.heuristic_value
+
+
+def misplaced_pieces_heuristic(node, target):
+    misplaced_pieces = 0
+    for i in range(6):
+        for j in range(3):
+            for k in range(3):
+                if node.curr_state[i][j][k] != target.curr_state[i][j][k]:
+                    misplaced_pieces += 1
+    return misplaced_pieces
         
 c = Cube()
 arr = ['D']
