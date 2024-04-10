@@ -446,7 +446,7 @@ class Solver:
 
     #Best First Search
     def Best_First_Search(self, heuristic):
-        self.visited_2 = set()
+        self.visited = set()
 
         pq = PriorityQueue()
         source = Node_BFS(self.cube.cube_array)
@@ -457,19 +457,22 @@ class Solver:
         while not pq.empty():
             current_node = pq.get()
             if current_node.curr_state == target.curr_state:
+                print("Solved!")
                 return current_node.path
 
             curr_state_str = str(current_node.curr_state)  
-            if curr_state_str not in self.visited_2:
-                self.visited_2.add(curr_state_str)
-                for move in self.moves:
-                    new_state = self.apply_move2(move, current_node.curr_state)
+            for move in self.moves:
+                new_state = self.apply_move2(move, current_node.curr_state)
+                new_state_str = str(new_state)
+                if new_state_str not in self.visited:
                     new_node = Node_BFS(new_state)
                     new_node.heuristic_value = heuristic(new_node, target)
                     new_node.path = current_node.path + [move]
                     pq.put(new_node)
+                    new_node = str(new_node)
+                    self.visited.add(new_node)
                     
-        return None  
+        return None
 
     def ida_star(self, root, heuristic):
         root_node = NodeAStar(root)
@@ -536,5 +539,7 @@ c.print_arr()
 
 s = Solver(c.cube_array)
 #s.bfs()
+#print(s.a_star(Solver.manhattan_distance))
 #print(s.a_star(Solver.misplaced_pieces_heuristic))
+#print(s.Best_First_Search(Solver.manhattan_distance))
 print(s.Best_First_Search(Solver.misplaced_pieces_heuristic))
