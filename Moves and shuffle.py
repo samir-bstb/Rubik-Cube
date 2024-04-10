@@ -469,7 +469,47 @@ class Solver:
                     new_node.path = current_node.path + [move]
                     pq.put(new_node)
                     
-        return None    
+        return None  
+
+    def ida_star(self, root, heuristic):
+        root_node = NodeAStar(root)
+        bound = heuristic(root_node, NodeAStar(self.solved_cube))
+        path = [(root_node, None)]  # Guarda el nodo y el movimiento en una tupla
+
+        while True:
+            t = self.search(path, 0, bound, heuristic)
+            if t == 'FOUND':
+                moves = [move for node, move in path if move is not None]
+                return len(moves), moves
+            if t == float('inf'):
+                return None
+            bound = t
+
+    def search(self, path, g, bound, heuristic):
+        node, move = path[-1]  
+        f = g + heuristic(node, NodeAStar(self.solved_cube))
+        if f > bound:
+            return f
+        if self.is_goal(node):
+            return 'FOUND'
+        min_bound = float('inf')
+        for move in self.moves:
+            if len(path) > 1 and path[-2][1] == move:  
+                continue
+            new_state = self.apply_move2(move, node.curr_state)
+            new_node = NodeAStar(new_state)
+            if (new_node, move) not in path:  
+                path.append((new_node, move)) 
+                t = self.search(path, g + 1, bound, heuristic)
+                if t == 'FOUND':
+                    return 'FOUND'
+                if t < min_bound:
+                    min_bound = t
+                path.pop()
+        return min_bound
+
+    def is_goal(self, node):
+        return node.curr_state == self.solved_cube
 
     #Heuristics
     def misplaced_pieces_heuristic(node, target):
