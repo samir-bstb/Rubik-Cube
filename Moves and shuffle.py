@@ -364,8 +364,7 @@ class Solver:
         self.moves = ['F', 'R', 'U', 'B', 'L', 'D', 'G', 'S', 'W', 'V', 'I', 'O']
         self.Q = Queue()
         self.visited = [] #for breadth first search
-        self.visited = set() #for A* 
-        self.visited_2 = set() #for best first search
+        self.visited = set() #for A* and BFS 
 
     def bfs(self):
         solution = self.__bfs(self.cube.cube_array)
@@ -375,7 +374,6 @@ class Solver:
           print(solution)
           
     def __bfs(self, start):
-      print("Entro")
       self.visited = []
       self.Q.put(start)
       self.visited.append(start)
@@ -472,49 +470,29 @@ class Solver:
                     new_node = str(new_node)
                     self.visited.add(new_node)
                     
-        return None
-
-    def ida_star(self, root, heuristic):
-        root_node = NodeAStar(root)
-        bound = heuristic(root_node, NodeAStar(self.solved_cube))
-        path = [(root_node, None)]  # Guarda el nodo y el movimiento en una tupla
-
-        while True:
-            t = self.search(path, 0, bound, heuristic)
-            if t == 'FOUND':
-                moves = [move for node, move in path if move is not None]
-                return len(moves), moves
-            if t == float('inf'):
-                return None
-            bound = t
-
-    def search(self, path, g, bound, heuristic):
-        node, move = path[-1]  
-        f = g + heuristic(node, NodeAStar(self.solved_cube))
-        if f > bound:
-            return f
-        if self.is_goal(node):
-            return 'FOUND'
-        min_bound = float('inf')
-        for move in self.moves:
-            if len(path) > 1 and path[-2][1] == move:  
-                continue
-            new_state = self.apply_move2(move, node.curr_state)
-            new_node = NodeAStar(new_state)
-            if (new_node, move) not in path:  
-                path.append((new_node, move)) 
-                t = self.search(path, g + 1, bound, heuristic)
-                if t == 'FOUND':
-                    return 'FOUND'
-                if t < min_bound:
-                    min_bound = t
-                path.pop()
-        return min_bound
-
-    def is_goal(self, node):
-        return node.curr_state == self.solved_cube
+        return None    
 
     #Heuristics
+    '''
+    def manhattan_distance(node, target):#no es optima
+        state = node.curr_state
+        distance = 0
+        for i in range(3):
+            for j in range(3):
+                for k in range(3):
+                    if i == 1 and j == 1 and k == 1:
+                        continue  # Ignorar el centro, ya que no es una esquina
+                    if state[i][j][k] != target.curr_state[i][j][k]:
+                        # Buscar la posición correcta de esta esquina
+                        for x in range(3):
+                            for y in range(3):
+                                for z in range(3):
+                                    if state[i][j][k] == target.curr_state[x][y][z]:
+                                        # Calcular la distancia Manhattan para esta esquina
+                                        distance += abs(i - x) + abs(j - y) + abs(k - z)
+                                        break  # Una vez encontrada la posición correcta, salir del bucle
+        return distance'''
+
     def misplaced_pieces_heuristic(node, target):
         misplaced_pieces = 0
         for i in range(6):
@@ -524,10 +502,11 @@ class Solver:
                         misplaced_pieces += 1
         return misplaced_pieces
 
+    
 c = Cube()
-#arr = ['D', 'G', 'S', 'O', 'U']
+#arr = ['I', 'D', 'F']
 #c.shuffle(arr)
-c.auto_shuffle(4)
+c.auto_shuffle(5)
 c.print_cube()
 print()
 c.print_arr()
@@ -539,7 +518,7 @@ c.print_arr()
 
 s = Solver(c.cube_array)
 #s.bfs()
-#print(s.a_star(Solver.manhattan_distance))
+#print(s.a_star(Solver.manhattan_heuristic))
 #print(s.a_star(Solver.misplaced_pieces_heuristic))
-#print(s.Best_First_Search(Solver.manhattan_distance))
+#print(s.Best_First_Search(Solver.manhattan_heuristic))
 print(s.Best_First_Search(Solver.misplaced_pieces_heuristic))
