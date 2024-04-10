@@ -144,6 +144,7 @@ class Cube:
             self.low_mtx[2][i] = self.left_mtx[i][0]
             self.left_mtx[i][0] = up_mtx_copy[0][2 - i]
         self.adjust()
+        
     def move_G(self):  # F'
         front_mtx_copy = [row[:] for row in self.front_mtx]
         self.left_mtx = self.rotate_counterclockwise(self.left_mtx)
