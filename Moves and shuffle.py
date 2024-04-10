@@ -494,14 +494,15 @@ class Solver:
                                         break  # Una vez encontrada la posición correcta, salir del bucle
         return distance'''
 
-    def misplaced_pieces_heuristic(node, target):
-        misplaced_pieces = 0
-        for i in range(6):
-            for j in range(3):
-                for k in range(3):
-                    if node.curr_state[i][j][k] != target.curr_state[i][j][k]:
-                        misplaced_pieces += 1
-        return misplaced_pieces
+def misplaced_pieces_heuristic(node, target):
+    misplaced_pieces = 0
+    for i in range(6):
+        for j in range(3):
+
+            for k in range(3):
+                 if node.curr_state[i][j][k] != target.curr_state[i][j][k]:
+                    misplaced_pieces += 1
+    return misplaced_pieces
 
     
 c = Cube()
@@ -522,4 +523,4 @@ s = Solver(c.cube_array)
 #print(s.a_star(Solver.manhattan_heuristic))
 #print(s.a_star(Solver.misplaced_pieces_heuristic))
 #print(s.Best_First_Search(Solver.manhattan_heuristic))
-print(s.Best_First_Search(Solver.misplaced_pieces_heuristic))
+print(s.Best_First_Search(misplaced_pieces_heuristic))
