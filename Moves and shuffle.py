@@ -3,6 +3,7 @@ import random
 import math
 import copy
 from queue import Queue
+from queue import PriorityQueue
 
 class Cube:
     def __init__(self):
@@ -284,6 +285,37 @@ class Cube:
             cubo.append(decoded_mtx)
         return cubo
 
+class Node_BFS:
+    def __init__(self, curr_state):
+        self.curr_state = curr_state
+        self.heuristic_value = 0
+        self.path = []
+
+    def __lt__(self, other):
+        return self.heuristic_value < other.heuristic_value
+
+    def __eq__(self, other):
+        return self.curr_state == other.curr_state
+
+    def __gt__(self, other):
+        return self.heuristic_value > other.heuristic_value
+
+class Node_AStar:
+    def __init__(self, curr_state):
+        self.curr_state = curr_state
+        self.distance = 0
+        self.heuristic_value = 0
+        self.path = []
+
+    def __lt__(self, other):
+        return self.distance + self.heuristic_value < other.distance + other.heuristic_value
+
+    def __eq__(self, other):
+        return self.curr_state == other.curr_state
+
+    def __gt__(self, other):
+        return self.distance + self.heuristic_value > other.distance + other.heuristic_value
+
 class Solver:
     def __init__(self, cube_array):
         self.cube = Cube()
@@ -331,7 +363,9 @@ class Solver:
         
         self.moves = ['F', 'R', 'U', 'B', 'L', 'D', 'G', 'S', 'W', 'V', 'I', 'O']
         self.Q = Queue()
-        self.visited = []
+        self.visited = [] #for breadth first search
+        self.visited = set() #for A* 
+        self.visited_2 = set() #for best first search
 
     def bfs(self):
         solution = self.__bfs(self.cube.cube_array)
@@ -341,6 +375,7 @@ class Solver:
           print(solution)
           
     def __bfs(self, start):
+      print("Entro")
       self.visited = []
       self.Q.put(start)
       self.visited.append(start)
@@ -360,15 +395,15 @@ class Solver:
                 self.visited.append(next_state)
 
     def apply_move(self, move, curr_state):
-      self.cube.cube_array = curr_state
-      self.cube.up_mtx = curr_state[0]
-      self.cube.front_mtx = curr_state[1]
-      self.cube.low_mtx = curr_state[2]
-      self.cube.left_mtx = curr_state[3]
-      self.cube.right_mtx = curr_state[4]
-      self.cube.back_mtx = curr_state[5]
-      self.cube.identify_move(move)
-      return self.cube.cube_array
+        self.cube.cube_array = curr_state
+        self.cube.up_mtx = curr_state[0]
+        self.cube.front_mtx = curr_state[1]
+        self.cube.low_mtx = curr_state[2]
+        self.cube.left_mtx = curr_state[3]
+        self.cube.right_mtx = curr_state[4]
+        self.cube.back_mtx = curr_state[5]
+        self.cube.identify_move(move)
+        return self.cube.cube_array
 
     def apply_move2(self, move, curr_state):
         self.cube.cube_array = copy.deepcopy(curr_state)
@@ -381,12 +416,13 @@ class Solver:
         self.cube.identify_move(move)
         return self.cube.cube_array
 
+    #A star implementation
     def a_star(self, heuristic):
         self.visited = set()
 
         pq = PriorityQueue()
-        source = NodeAStar(self.cube.cube_array)
-        target = NodeAStar(self.solved_cube)
+        source = Node_AStar(self.cube.cube_array)
+        target = Node_AStar(self.solved_cube)
         source.heuristic_value = heuristic(source, target)
         source.distance = 0
         pq.put(source)
@@ -401,52 +437,64 @@ class Solver:
                 self.visited.add(curr_state_str)
                 for move in self.moves:
                     new_state = self.apply_move2(move, current_node.curr_state)
-                    new_node = NodeAStar(new_state)
+                    new_node = Node_AStar(new_state)
                     new_node.distance = current_node.distance + 1
                     new_node.heuristic_value = heuristic(new_node, target)
                     new_node.path = current_node.path + [move]
                     pq.put(new_node)
         return None
 
+    #Best First Search
+    def Best_First_Search(self, heuristic):
+        self.visited_2 = set()
 
-class NodeAStar:
-    def __init__(self, curr_state):
-        self.curr_state = curr_state
-        self.distance = 0
-        self.heuristic_value = 0
-        self.path = []
+        pq = PriorityQueue()
+        source = Node_BFS(self.cube.cube_array)
+        target = Node_BFS(self.solved_cube)
+        source.heuristic_value = heuristic(source, target)
+        pq.put(source)
 
-    def __lt__(self, other):
-        return self.distance + self.heuristic_value < other.distance + other.heuristic_value
+        while not pq.empty():
+            current_node = pq.get()
+            if current_node.curr_state == target.curr_state:
+                return current_node.path
 
-    def __eq__(self, other):
-        return self.curr_state == other.curr_state
+            curr_state_str = str(current_node.curr_state)  
+            if curr_state_str not in self.visited_2:
+                self.visited_2.add(curr_state_str)
+                for move in self.moves:
+                    new_state = self.apply_move2(move, current_node.curr_state)
+                    new_node = Node_BFS(new_state)
+                    new_node.heuristic_value = heuristic(new_node, target)
+                    new_node.path = current_node.path + [move]
+                    pq.put(new_node)
+                    
+        return None    
 
-    def __gt__(self, other):
-        return self.distance + self.heuristic_value > other.distance + other.heuristic_value
+    #Heuristics
+    def misplaced_pieces_heuristic(node, target):
+        misplaced_pieces = 0
+        for i in range(6):
+            for j in range(3):
+                for k in range(3):
+                    if node.curr_state[i][j][k] != target.curr_state[i][j][k]:
+                        misplaced_pieces += 1
+        return misplaced_pieces
 
-
-def misplaced_pieces_heuristic(node, target):
-    misplaced_pieces = 0
-    for i in range(6):
-        for j in range(3):
-            for k in range(3):
-                if node.curr_state[i][j][k] != target.curr_state[i][j][k]:
-                    misplaced_pieces += 1
-    return misplaced_pieces
-        
 c = Cube()
-arr = ['D']
-c.shuffle(arr)
-#c.auto_shuffle(6)
+#arr = ['D', 'G', 'S', 'O', 'U']
+#c.shuffle(arr)
+c.auto_shuffle(4)
 c.print_cube()
 print()
 c.print_arr()
 
-result = c.encode_cube() 
-print(result)
-s = c.decode(result)
-print(s)
+#result = c.encode_cube() 
+#print(result)
+#s = c.decode(result)
+#print(s)
 
 s = Solver(c.cube_array)
-s.bfs()
+#s.bfs()
+#print(s.a_star(Solver.misplaced_pieces_heuristic))
+print(s.Best_First_Search(Solver.misplaced_pieces_heuristic))
