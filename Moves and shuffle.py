@@ -373,7 +373,8 @@ class Solver:
             ]
         ]
 
-        self.solved_cube2= [571885666967682, 285942833483841, 1143771333935364, 2287542667870728, 4575085335741456, 9150170671482912]
+        self.solved_cube2 = [571885666967682, 285942833483841, 1143771333935364, 2287542667870728, 4575085335741456,
+                             9150170671482912]
         self.moves = ['F', 'R', 'U', 'B', 'L', 'D', 'G', 'S', 'W', 'V', 'I', 'O']
         self.Q = Queue()
         self.visited = []  # for breadth first search
@@ -544,16 +545,15 @@ class Heuristics:
 
     @staticmethod
     def manhattan_distance_heuristic(node, target):
-    distance = 0
-    for i in range(6):
-        for j in range(3):
-            for k in range(3):
-                # Encuentra la posición objetivo de la pieza actual
-                target_position = find_position(target.curr_state, node.curr_state[i][j][k])
-                # Calcula la distancia de Manhattan entre la posición actual y la posición objetivo
-                distance += abs(i - target_position[0]) + abs(j - target_position[1]) + abs(k - target_position[2])
-    return distance
+        distance = 0
+        for i in range(6):
+            for j in range(3):
+                for k in range(3):
+                    target_position = Heuristics.find_position(target.curr_state, node.curr_state[i][j][k])
+                    distance += abs(i - target_position[0]) + abs(j - target_position[1]) + abs(k - target_position[2])
+        return distance
 
+    @staticmethod
     def find_position(state, piece):
         for i in range(6):
             for j in range(3):
@@ -584,19 +584,22 @@ def menu():
             print("1. BFS")
             print("2. A*")
             print("3. Best First Search")
-            print("4. IDA*")  # Nueva opción para IDA*
+            print("4. IDA*")
             algorithm = input("Elige un algoritmo: ")
-            if algorithm in ['2', '3', '4']:  # Agregar '4' aquí
+            if algorithm in ['2', '3', '4']:
                 print("1. Misplaced pieces heuristic")
                 print("2. Stickers out of position")
+                print("3. Manhattan distance heuristic")  # Nueva opción para la heurística de Manhattan
                 heuristic_choice = input("Elige una heurística: ")
                 if heuristic_choice == '1':
                     heuristic = Heuristics.misplaced_pieces_heuristic
-                else:
+                elif heuristic_choice == '2':
                     heuristic = Heuristics.stickers_out_pos
+                elif heuristic_choice == '3':  # Manejar la nueva opción
+                    heuristic = Heuristics.manhattan_distance_heuristic
             start_time = time.time()
             if algorithm == '1':
-                print(s.bfs())
+                s.bfs()
             elif algorithm == '2':
                 print(s.a_star(heuristic))
             elif algorithm == '3':
