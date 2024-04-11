@@ -376,19 +376,22 @@ class Solver:
           
     def __bfs(self, start):
       self.visited = []
-      self.Q.put(start)
-      self.visited.append(start)
+      cubie = self.cube.encode(start)
+      self.Q.put(cubie)
+      self.visited.append(cubie)
 
-      print("bfs start", start)
+      print("bfs start", cubie)
       while not self.Q.empty():
-          curr_state = self.Q.get()
-          if curr_state == self.solved_cube:
+          cubie = self.Q.get()
+          if cubie == self.solved_cube2:
               print("Solved")
-              return curr_state
+              return cubie
 
           for move in self.moves:
+              curr_state = self.cube.decode(cubie)
               next_state = copy.deepcopy(curr_state)
               next_state = self.apply_move(move, next_state)
+              next_state = self.cube.encode(next_state)
               if next_state not in self.visited:
                 self.Q.put(next_state)
                 self.visited.append(next_state)
@@ -474,26 +477,6 @@ class Solver:
         return None    
 
     #Heuristics
-    '''
-    def manhattan_distance(node, target):#no es optima
-        state = node.curr_state
-        distance = 0
-        for i in range(3):
-            for j in range(3):
-                for k in range(3):
-                    if i == 1 and j == 1 and k == 1:
-                        continue  # Ignorar el centro, ya que no es una esquina
-                    if state[i][j][k] != target.curr_state[i][j][k]:
-                        # Buscar la posición correcta de esta esquina
-                        for x in range(3):
-                            for y in range(3):
-                                for z in range(3):
-                                    if state[i][j][k] == target.curr_state[x][y][z]:
-                                        # Calcular la distancia Manhattan para esta esquina
-                                        distance += abs(i - x) + abs(j - y) + abs(k - z)
-                                        break  # Una vez encontrada la posición correcta, salir del bucle
-        return distance'''
-
 def misplaced_pieces_heuristic(node, target):
     misplaced_pieces = 0
     for i in range(6):
@@ -504,7 +487,14 @@ def misplaced_pieces_heuristic(node, target):
                     misplaced_pieces += 1
     return misplaced_pieces
 
-    
+def stickers_out_pos(source, target):
+    #Distance between the state and the solved state
+    total_distance = 0
+    for source_face, target_face in zip(source.curr_state, target.curr_state):
+        face_distance = sum(1 for s, t in zip(source_face, target_face) if s != t)
+        total_distance += face_distance
+    return total_distance
+
 c = Cube()
 #arr = ['I', 'D', 'F']
 #c.shuffle(arr)
@@ -513,14 +503,11 @@ c.print_cube()
 print()
 c.print_arr()
 
-#result = c.encode_cube() 
-#print(result)
-#s = c.decode(result)
-#print(s)
-
 s = Solver(c.cube_array)
 #s.bfs()
-#print(s.a_star(Solver.manhattan_heuristic))
-#print(s.a_star(Solver.misplaced_pieces_heuristic))
 #print(s.Best_First_Search(Solver.manhattan_heuristic))
-print(s.Best_First_Search(misplaced_pieces_heuristic))
+#print(s.a_star(Solver.manhattan_heuristic))
+##print(s.Best_First_Search(misplaced_pieces_heuristic))
+#print(s.a_star(Solver.misplaced_pieces_heuristic))
+#print(s.Best_First_Search(stickers_out_pos))
+print(s.a_star(stickers_out_pos))
