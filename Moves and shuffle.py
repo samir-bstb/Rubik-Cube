@@ -373,6 +373,7 @@ class Solver:
             ]
         ]
 
+        self.solved_cube2= [571885666967682, 285942833483841, 1143771333935364, 2287542667870728, 4575085335741456, 9150170671482912]
         self.moves = ['F', 'R', 'U', 'B', 'L', 'D', 'G', 'S', 'W', 'V', 'I', 'O']
         self.Q = Queue()
         self.visited = []  # for breadth first search
