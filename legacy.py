@@ -1,3 +1,7 @@
+# Esta es el primer archivo del proyecto donde se hicieron todos los primeros commits
+# El proyecto finalizado y funcionando se encuentra en Rubik-Cube/Proyecto/
+# Este código es solamente para evidencia, no es el proyecto finalizado
+
 import numpy as np
 import random
 import math
