@@ -395,7 +395,7 @@ class Solver:
         print("bfs start", cubie)
         while not self.Q.empty():
             cubie = self.Q.get()
-            if cubie == self.solved_cube:
+            if cubie == self.solved_cube2:
                 print("Solved")
                 return cubie
 
