@@ -4,6 +4,8 @@ import math
 import copy
 from queue import Queue
 from queue import PriorityQueue
+import time
+
 
 class Cube:
     def __init__(self):
@@ -144,7 +146,7 @@ class Cube:
             self.low_mtx[2][i] = self.left_mtx[i][0]
             self.left_mtx[i][0] = up_mtx_copy[0][2 - i]
         self.adjust()
-        
+
     def move_G(self):  # F'
         front_mtx_copy = [row[:] for row in self.front_mtx]
         self.left_mtx = self.rotate_counterclockwise(self.left_mtx)
@@ -213,34 +215,34 @@ class Cube:
     def shuffle(self, arr):
         for move in arr:
             self.identify_move(move)
-    
+
     def identify_move(self, move):
-      if move == 'F':
-          self.move_F()
-      elif move == 'R':
-          self.move_R()
-      elif move == 'U':
-          self.move_U()
-      elif move == 'B':
-          self.move_B()
-      elif move == 'L':
-          self.move_L()
-      elif move == 'D':
-          self.move_D()
-      elif move == 'G':  # F'
-          self.move_G()
-      elif move == 'S':  # R'
-          self.move_S()
-      elif move == 'W':  # U'
-          self.move_W()
-      elif move == 'V':  # B'
-          self.move_V()
-      elif move == 'I':  # L'
-          self.move_I()
-      elif move == 'O':  # D'
-          self.move_O()
-      else:
-          print(f"Invalid move: {move}")
+        if move == 'F':
+            self.move_F()
+        elif move == 'R':
+            self.move_R()
+        elif move == 'U':
+            self.move_U()
+        elif move == 'B':
+            self.move_B()
+        elif move == 'L':
+            self.move_L()
+        elif move == 'D':
+            self.move_D()
+        elif move == 'G':  # F'
+            self.move_G()
+        elif move == 'S':  # R'
+            self.move_S()
+        elif move == 'W':  # U'
+            self.move_W()
+        elif move == 'V':  # B'
+            self.move_V()
+        elif move == 'I':  # L'
+            self.move_I()
+        elif move == 'O':  # D'
+            self.move_O()
+        else:
+            print(f"Invalid move: {move}")
 
     # changes the style of the cube randomly
     def auto_shuffle(self, limit):
@@ -286,6 +288,13 @@ class Cube:
             cubo.append(decoded_mtx)
         return cubo
 
+
+class Node:
+    def __init__(self, curr_state):
+        self.curr_state = curr_state
+        self.path = []
+
+
 class Node_BFS:
     def __init__(self, curr_state):
         self.curr_state = curr_state
@@ -300,6 +309,7 @@ class Node_BFS:
 
     def __gt__(self, other):
         return self.heuristic_value > other.heuristic_value
+
 
 class Node_AStar:
     def __init__(self, curr_state):
@@ -317,12 +327,13 @@ class Node_AStar:
     def __gt__(self, other):
         return self.distance + self.heuristic_value > other.distance + other.heuristic_value
 
+
 class Solver:
     def __init__(self, cube_array):
         self.cube = Cube()
         self.cube.cube_array = cube_array
-        self.cube.up_mtx =  self.cube.cube_array[0]
-        self.cube.front_mtx = self.cube.cube_array[1] 
+        self.cube.up_mtx = self.cube.cube_array[0]
+        self.cube.front_mtx = self.cube.cube_array[1]
         self.cube.low_mtx = self.cube.cube_array[2]
         self.cube.left_mtx = self.cube.cube_array[3]
         self.cube.right_mtx = self.cube.cube_array[4]
@@ -361,40 +372,40 @@ class Solver:
                 [5, 5, 5]
             ]
         ]
-        
+
         self.moves = ['F', 'R', 'U', 'B', 'L', 'D', 'G', 'S', 'W', 'V', 'I', 'O']
         self.Q = Queue()
-        self.visited = [] #for breadth first search
-        self.visited = set() #for A* and BFS 
+        self.visited = []  # for breadth first search
+        self.visited = set()  # for A* and BFS
 
     def bfs(self):
         solution = self.__bfs(self.cube.cube_array)
         if solution is None:
-          print("No solution found")
+            print("No solution found")
         else:
-          print(solution)
-          
+            print(solution)
+
     def __bfs(self, start):
-      self.visited = []
-      cubie = self.cube.encode(start)
-      self.Q.put(cubie)
-      self.visited.append(cubie)
+        self.visited = []
+        cubie = self.cube.encode(start)
+        self.Q.put(cubie)
+        self.visited.append(cubie)
 
-      print("bfs start", cubie)
-      while not self.Q.empty():
-          cubie = self.Q.get()
-          if cubie == self.solved_cube2:
-              print("Solved")
-              return cubie
+        print("bfs start", cubie)
+        while not self.Q.empty():
+            cubie = self.Q.get()
+            if cubie == self.solved_cube:
+                print("Solved")
+                return cubie
 
-          for move in self.moves:
-              curr_state = self.cube.decode(cubie)
-              next_state = copy.deepcopy(curr_state)
-              next_state = self.apply_move(move, next_state)
-              next_state = self.cube.encode(next_state)
-              if next_state not in self.visited:
-                self.Q.put(next_state)
-                self.visited.append(next_state)
+            for move in self.moves:
+                curr_state = self.cube.decode(cubie)
+                next_state = copy.deepcopy(curr_state)
+                next_state = self.apply_move(move, next_state)
+                next_state = self.cube.encode(next_state)
+                if next_state not in self.visited:
+                    self.Q.put(next_state)
+                    self.visited.append(next_state)
 
     def apply_move(self, move, curr_state):
         self.cube.cube_array = curr_state
@@ -418,7 +429,35 @@ class Solver:
         self.cube.identify_move(move)
         return self.cube.cube_array
 
-    #A star implementation
+    def Best_First_Search(self, heuristic):
+        self.visited = set()
+
+        pq = PriorityQueue()
+        source = Node_BFS(self.cube.cube_array)
+        target = Node_BFS(self.solved_cube)
+        source.heuristic_value = heuristic(source, target)
+        pq.put(source)
+
+        while not pq.empty():
+            current_node = pq.get()
+            if current_node.curr_state == target.curr_state:
+                print("Solved!")
+                return current_node.path
+
+            curr_state_str = str(current_node.curr_state)
+            for move in self.moves:
+                new_state = self.apply_move2(move, current_node.curr_state)
+                new_state_str = str(new_state)
+                if new_state_str not in self.visited:
+                    new_node = Node_BFS(new_state)
+                    new_node.heuristic_value = heuristic(new_node, target)
+                    new_node.path = current_node.path + [move]
+                    pq.put(new_node)
+                    new_node = str(new_node)
+                    self.visited.add(new_node)
+
+        return None
+
     def a_star(self, heuristic):
         self.visited = set()
 
@@ -446,68 +485,110 @@ class Solver:
                     pq.put(new_node)
         return None
 
-    #Best First Search
-    def Best_First_Search(self, heuristic):
-        self.visited = set()
-
-        pq = PriorityQueue()
-        source = Node_BFS(self.cube.cube_array)
-        target = Node_BFS(self.solved_cube)
+    def ida_star(self, heuristic):
+        source = Node_AStar(self.cube.cube_array)
+        target = Node_AStar(self.solved_cube)
         source.heuristic_value = heuristic(source, target)
-        pq.put(source)
+        threshold = source.heuristic_value
 
-        while not pq.empty():
-            current_node = pq.get()
-            if current_node.curr_state == target.curr_state:
-                print("Solved!")
-                return current_node.path
+        while threshold != float('inf'):
+            min_cost, path = self.dls(source, target, threshold, heuristic)
+            if path is not None:
+                return len(path), path
+            threshold = min_cost
+        return None
 
-            curr_state_str = str(current_node.curr_state)  
-            for move in self.moves:
-                new_state = self.apply_move2(move, current_node.curr_state)
-                new_state_str = str(new_state)
-                if new_state_str not in self.visited:
-                    new_node = Node_BFS(new_state)
+    def dls(self, source, target, threshold, heuristic):
+        stack = [(source, 0)]
+        min_cost = float('inf')
+
+        while stack:
+            node, cost = stack.pop()
+            total_cost = cost + heuristic(node, target)
+
+            if total_cost > threshold:
+                min_cost = min(min_cost, total_cost)
+            elif node.curr_state == target.curr_state:
+                return cost, node.path
+            else:
+                for move in self.moves:
+                    new_state = self.apply_move2(move, node.curr_state)
+                    new_node = Node_AStar(new_state)
+                    new_node.distance = node.distance + 1
                     new_node.heuristic_value = heuristic(new_node, target)
-                    new_node.path = current_node.path + [move]
-                    pq.put(new_node)
-                    new_node = str(new_node)
-                    self.visited.add(new_node)
-                    
-        return None    
+                    new_node.path = node.path + [move]
+                    stack.append((new_node, cost + 1))
+        return min_cost, None
 
-    #Heuristics
-def misplaced_pieces_heuristic(node, target):
-    misplaced_pieces = 0
-    for i in range(6):
-        for j in range(3):
 
-            for k in range(3):
-                 if node.curr_state[i][j][k] != target.curr_state[i][j][k]:
-                    misplaced_pieces += 1
-    return misplaced_pieces
+class Heuristics:
+    @staticmethod
+    def misplaced_pieces_heuristic(node, target):
+        misplaced_pieces = 0
+        for i in range(6):
+            for j in range(3):
 
-def stickers_out_pos(source, target):
-    #Distance between the state and the solved state
-    total_distance = 0
-    for source_face, target_face in zip(source.curr_state, target.curr_state):
-        face_distance = sum(1 for s, t in zip(source_face, target_face) if s != t)
-        total_distance += face_distance
-    return total_distance
+                for k in range(3):
+                    if node.curr_state[i][j][k] != target.curr_state[i][j][k]:
+                        misplaced_pieces += 1
+        return misplaced_pieces
 
-c = Cube()
-#arr = ['I', 'D', 'F']
-#c.shuffle(arr)
-c.auto_shuffle(5)
-c.print_cube()
-print()
-c.print_arr()
+    @staticmethod
+    def stickers_out_pos(source, target):
+        total_distance = 0
+        for source_face, target_face in zip(source.curr_state, target.curr_state):
+            face_distance = sum(1 for s, t in zip(source_face, target_face) if s != t)
+            total_distance += face_distance
+        return total_distance
 
-s = Solver(c.cube_array)
-#s.bfs()
-#print(s.Best_First_Search(Solver.manhattan_heuristic))
-#print(s.a_star(Solver.manhattan_heuristic))
-#print(s.Best_First_Search(misplaced_pieces_heuristic))
-#print(s.a_star(Solver.misplaced_pieces_heuristic))
-#print(s.Best_First_Search(stickers_out_pos))
-print(s.a_star(stickers_out_pos))
+
+def menu():
+    c = Cube()
+    s = Solver(c.cube_array)
+    while True:
+        print("1. Shuffle manual")
+        print("2. Shuffle aleatorio")
+        print("3. Resolver el cubo")
+        print("4. Salir")
+        choice = input("Elige una opción: ")
+
+        if choice == '1':
+            moves = input("Introduce los movimientos que quieres hacer (separados por espacios): ").split()
+            c.shuffle(moves)
+            c.print_cube()
+        elif choice == '2':
+            moves = int(input("Introduce cuantos movimientos quieres hacer: "))
+            c.auto_shuffle(moves)
+            c.print_cube()
+        elif choice == '3':
+            print("1. BFS")
+            print("2. A*")
+            print("3. Best First Search")
+            print("4. IDA*")  # Nueva opción para IDA*
+            algorithm = input("Elige un algoritmo: ")
+            if algorithm in ['2', '3', '4']:  # Agregar '4' aquí
+                print("1. Misplaced pieces heuristic")
+                print("2. Stickers out of position")
+                heuristic_choice = input("Elige una heurística: ")
+                if heuristic_choice == '1':
+                    heuristic = Heuristics.misplaced_pieces_heuristic
+                else:
+                    heuristic = Heuristics.stickers_out_pos
+            start_time = time.time()
+            if algorithm == '1':
+                print(s.bfs())
+            elif algorithm == '2':
+                print(s.a_star(heuristic))
+            elif algorithm == '3':
+                print(s.Best_First_Search(heuristic))
+            elif algorithm == '4':
+                print(s.ida_star(heuristic))
+            end_time = time.time()
+            print("Tiempo de ejecución: ", end_time - start_time, "segundos")
+        elif choice == '4':
+            break
+        else:
+            print("Opción no válida. Por favor, elige una opción del 1 al 4.")
+
+
+menu()
