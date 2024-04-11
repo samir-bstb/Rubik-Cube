@@ -541,6 +541,25 @@ class Heuristics:
             total_distance += face_distance
         return total_distance
 
+    @staticmethod
+    def manhattan_distance_heuristic(node, target):
+    distance = 0
+    for i in range(6):
+        for j in range(3):
+            for k in range(3):
+                # Encuentra la posición objetivo de la pieza actual
+                target_position = find_position(target.curr_state, node.curr_state[i][j][k])
+                # Calcula la distancia de Manhattan entre la posición actual y la posición objetivo
+                distance += abs(i - target_position[0]) + abs(j - target_position[1]) + abs(k - target_position[2])
+    return distance
+
+    def find_position(state, piece):
+        for i in range(6):
+            for j in range(3):
+                for k in range(3):
+                    if state[i][j][k] == piece:
+                        return (i, j, k)
+
 
 def menu():
     c = Cube()
